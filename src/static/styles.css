@@ -664,3 +664,83 @@ footer {
 #logout-button:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
+/* Social sharing */
+.share-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+  position: relative;
+}
+
+.share-button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  width: auto;
+}
+
+.share-button:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-text);
+  border-color: var(--primary-light);
+}
+
+.share-dropdown {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.share-dropdown.open {
+  display: block;
+}
+
+.share-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.share-option:hover {
+  background-color: var(--background);
+}
+
+/* Highlighted card when arriving via shared link */
+.activity-card.highlighted {
+  outline: 3px solid var(--primary-light);
+  outline-offset: 2px;
+  animation: highlight-pulse 2s ease-out forwards;
+}
+
+@keyframes highlight-pulse {
+  0%   { outline-color: var(--primary-light); }
+  80%  { outline-color: var(--primary-light); }
+  100% { outline-color: transparent; }
+}

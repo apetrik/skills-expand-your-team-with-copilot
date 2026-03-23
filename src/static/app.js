@@ -470,6 +470,9 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(filteredActivities).forEach(([name, details]) => {
       renderActivityCard(name, details);
     });
+
+    // Highlight activity from URL hash if present
+    highlightActivityFromHash();
   }
 
   // Function to render a single activity card
@@ -569,6 +572,16 @@ document.addEventListener("DOMContentLoaded", () => {
         `
         }
       </div>
+      <div class="share-section">
+        <button class="share-button" aria-label="Share this activity">
+          🔗 Share
+        </button>
+        <div class="share-dropdown">
+          <button class="share-option share-twitter">🐦 Share on X / Twitter</button>
+          <button class="share-option share-email">✉️ Share via Email</button>
+          <button class="share-option share-copy">📋 Copy Link</button>
+        </div>
+      </div>
     `;
 
     // Add click handlers for delete buttons
@@ -587,7 +600,76 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Add social sharing event listeners
+    const shareButton = activityCard.querySelector(".share-button");
+    const shareDropdown = activityCard.querySelector(".share-dropdown");
+
+    shareButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const shareUrl = getActivityShareUrl(name);
+      const shareText = `Check out "${name}" at Mergington High School! ${details.description}`;
+
+      // Use Web Share API if available (mobile/modern browsers)
+      if (navigator.share) {
+        navigator.share({ title: name, text: shareText, url: shareUrl }).catch(() => {});
+      } else {
+        // Toggle dropdown for desktop browsers
+        shareDropdown.classList.toggle("open");
+      }
+    });
+
+    activityCard.querySelector(".share-twitter").addEventListener("click", () => {
+      const shareUrl = getActivityShareUrl(name);
+      const text = encodeURIComponent(`Check out "${name}" – ${details.description}`);
+      window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(shareUrl)}`, "_blank", "noopener");
+      shareDropdown.classList.remove("open");
+    });
+
+    activityCard.querySelector(".share-email").addEventListener("click", () => {
+      const shareUrl = getActivityShareUrl(name);
+      const subject = encodeURIComponent(`Check out: ${name}`);
+      const body = encodeURIComponent(`Hi!\n\nI thought you might be interested in this activity at Mergington High School:\n\n"${name}"\n${details.description}\n\nSchedule: ${formatSchedule(details)}\n\nLearn more: ${shareUrl}`);
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+      shareDropdown.classList.remove("open");
+    });
+
+    activityCard.querySelector(".share-copy").addEventListener("click", () => {
+      const shareUrl = getActivityShareUrl(name);
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const copyBtn = activityCard.querySelector(".share-copy");
+        copyBtn.textContent = "✅ Link Copied!";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy Link"; }, 2000);
+      }).catch(() => {
+        const copyBtn = activityCard.querySelector(".share-copy");
+        copyBtn.textContent = "❌ Copy failed";
+        setTimeout(() => { copyBtn.textContent = "📋 Copy Link"; }, 2000);
+      });
+      shareDropdown.classList.remove("open");
+    });
+
+    // Set a data attribute so we can find this card by activity name
+    activityCard.dataset.activityName = name;
+
     activitiesList.appendChild(activityCard);
+  }
+
+  // Returns a direct URL to a specific activity using the URL hash
+  function getActivityShareUrl(activityName) {
+    return `${window.location.origin}${window.location.pathname}#${encodeURIComponent(activityName)}`;
+  }
+
+  // Scroll to and highlight an activity card matching the URL hash
+  function highlightActivityFromHash() {
+    if (!activitiesList) return;
+    const hash = window.location.hash;
+    if (!hash) return;
+    const activityName = decodeURIComponent(hash.slice(1));
+    const card = activitiesList.querySelector(`[data-activity-name="${CSS.escape(activityName)}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("highlighted");
+      setTimeout(() => card.classList.remove("highlighted"), 2500);
+    }
   }
 
   // Event listeners for search and filter
@@ -860,6 +942,11 @@ document.addEventListener("DOMContentLoaded", () => {
     setDayFilter,
     setTimeRangeFilter,
   };
+
+  // Close any open share dropdowns when clicking outside
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".share-dropdown.open").forEach((d) => d.classList.remove("open"));
+  });
 
   // Initialize app
   checkAuthentication();
